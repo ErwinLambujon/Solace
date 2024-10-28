@@ -76,6 +76,7 @@ dependencies {
     //testImplementation 'junit:junit:4.13'
 
     //Distributed Tracing Dependency on OpenTelemetry and Solace OpenTelemetry JCSMP Integration
+    implementation 'com.solace:solace-messaging-client:1.2.0'
     implementation group: 'com.solace', name: 'solace-opentelemetry-jcsmp-integration', version: '1.1.0'
     implementation group: 'io.opentelemetry', name: 'opentelemetry-exporter-otlp', version: '1.+'
     implementation group: 'io.opentelemetry.semconv', name: 'opentelemetry-semconv', version: '1.+'

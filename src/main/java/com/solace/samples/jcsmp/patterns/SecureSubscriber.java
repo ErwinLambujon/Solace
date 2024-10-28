@@ -1,36 +1,33 @@
-/*
- * Copyright 2021-2022 Solace Corporation. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
-
 package com.solace.samples.jcsmp.patterns;
 
+import com.solacesystems.jcsmp.BytesXMLMessage;
+import com.solacesystems.jcsmp.JCSMPException;
+import com.solacesystems.jcsmp.JCSMPFactory;
+import com.solacesystems.jcsmp.JCSMPProperties;
+import com.solacesystems.jcsmp.JCSMPSession;
+import com.solacesystems.jcsmp.JCSMPStreamingPublishEventHandler;
+import com.solacesystems.jcsmp.TextMessage;
+import com.solacesystems.jcsmp.Topic;
+import com.solacesystems.jcsmp.XMLMessageConsumer;
+import com.solacesystems.jcsmp.XMLMessageListener;
+import com.solacesystems.jcsmp.XMLMessageProducer;
 import com.solacesystems.jcsmp.*;
 
-public class DirectSubscriber {
+public class SecureSubscriber {
     private JCSMPSession session;
     private XMLMessageConsumer consumer;
     private Topic topic;
 
     public static void main(String... args) throws JCSMPException {
-        if (args.length < 4) {
-            System.out.println("Usage: DirectSubscriber <host> <vpn> <username> <password>");
-            System.exit(1);
-        }
+        String[] connectArgs = new String[] {
+                "tcps://mr-connection-3b0hu8d008q.messaging.solace.cloud:55443",
+                "erwin-service",
+                "solace-cloud-client",
+                "fvn21bb2a31445bfar33a8sp8n"
+        };
 
-        DirectSubscriber subscriber = new DirectSubscriber();
-        subscriber.run(args);
+        SecureSubscriber subscriber = new SecureSubscriber();
+        subscriber.run(connectArgs);
     }
 
     public void run(String... args) throws JCSMPException {
@@ -40,17 +37,18 @@ public class DirectSubscriber {
         properties.setProperty(JCSMPProperties.USERNAME, args[2]);
         properties.setProperty(JCSMPProperties.PASSWORD, args[3]);
 
+        properties.setProperty(JCSMPProperties.SSL_VALIDATE_CERTIFICATE, true);
+
         session = JCSMPFactory.onlyInstance().createSession(properties);
         session.connect();
 
         topic = JCSMPFactory.onlyInstance().createTopic("samples/hello");
 
-        // Create consumer and subscribe to topic
         consumer = session.getMessageConsumer(new MessageHandler());
         session.addSubscription(topic);
         consumer.start();
 
-        System.out.println("Connected. Subscribing to topic: " + topic.getName());
+        System.out.println("Connected securely. Subscribing to topic: " + topic.getName());
         System.out.println("Press [ENTER] to quit.");
 
         try {
@@ -69,16 +67,10 @@ public class DirectSubscriber {
             if (message instanceof TextMessage) {
                 System.out.printf("\nReceived TextMessage: '%s'%n",
                         ((TextMessage) message).getText());
-            } else {
-                System.out.println("\nReceived message of type: " +
-                        message.getClass().getSimpleName());
             }
-
-            // Print additional message details
             System.out.println("Message Details:");
             System.out.println("  Topic: " + message.getDestination());
-            System.out.println("  Priority: " + message.getPriority());
-            System.out.println("  Class: " + message.getClass().getSimpleName());
+            System.out.println("  Protocol Message ID: " + message.getMessageId());
         }
 
         @Override

@@ -62,7 +62,7 @@ public class TopicSubscriber {
         }
         final Topic topic = JCSMPFactory.onlyInstance().createTopic("tutorial/topic");
         final JCSMPSession session = JCSMPFactory.onlyInstance().createSession(properties);
-
+        session.addSubscription(topic);
         session.connect();
 
         final CountDownLatch latch = new CountDownLatch(1); // used for
